@@ -7,11 +7,32 @@
     <link rel="stylesheet" href={{ url_for('static', filename='style.css') }}>
 </head>
 <body>
-    <div class="drop-zone" id="drop-zone">
-        Arrastra aquí tu imagen o haz clic para seleccionar
-        <input type="file" id="file-input" accept="image/*" hidden>
+
+    <div id="container">
+        <div id="drop-zone">
+            Arrastra aquí tu imagen o haz clic para seleccionar
+            <input type="file" id="file-input" accept="image/*" hidden>
+        </div>
+        <div id="form-zone">
+            <label type="dropdown" for="template">Tipo</label>
+            <select id="template">
+                <option value="carnet">Carnet</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="visa">Visa</option>
+            <input type="radio" id="unidad" name="unidad" value="cm" checked>cm
+            <input type="radio" id="unidad" name="unidad" value="pulgada">pulgada
+            <label for="ancho">Ancho</label>
+            <input type="text" id="ancho" placeholder="ancho de la imagen" required>
+            <label for="alto">Alto</label>
+            <input type="text" id="alto" placeholder="alto de la imagen" required>
+            <label for="dpi">DPI</label>
+            <input type="number" id="dpi" placeholder="dpi" required>
+            <label for="porcentaje">Porcentaje de cabeza</label>
+            <input type="number" id="porcentaje" placeholder="porcentaje de cabeza" required>
+            <button id="submit" disabled>Generar</button>
+        </div>
+        <div id="preview"></div>
     </div>
-    <div class="preview"></div>
     <script src={{ url_for('static', filename='app.js') }}></script>
 </body>
 </html>
