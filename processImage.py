@@ -22,17 +22,34 @@ def image_crop(file, width, height, dpi, percent):
     aspect_ratio = width / height
     height_orig = int((h * 100) / percent)
     width_orig = int(height_orig * aspect_ratio)
-    print('altura de la cabeza' + str(h))
-    print('altura original' + str(height_orig))
+    print('altura de la cabeza ' + str(h))
+    print('altura de la foto ' + str(height_orig))
     upper_margin = int((height_orig - h) * 0.3)
     lower_margin = int((height_orig - h) * 0.7)
     left_margin = int((width_orig - w) * 0.5)
     right_margin = int((width_orig - w) * 0.5)
     print('margen superior' + str(upper_margin))
     print('margen inferior' + str(lower_margin))
+    #if y - upper_margin < 0 or x - left_margin < 0 or y+h+lower_margin > img.shape[0] or x+w+right_margin > img.shape[1]:
+    #    return None
+    x1 = max(0, x - left_margin)
+    y1 = max(0, y - upper_margin)
+    x2 = min(img.shape[1], x + w + right_margin)
+    y2 = min(img.shape[0], y + h + lower_margin)    
+    img_crop = img[y1:y2, x1:x2]
+    
+    pad_left = max(0, x1 - x)
+    pad_right = max(0, (x + w) - x2)
+    pad_top = max(0, y1 - y)
+    pad_bottom = max(0, (y + h) - y2)
+    
+    img_padded = cv.copyMakeBorder(img_crop, 
+                                   pad_top, pad_bottom, pad_left, pad_right, 
+                                   cv.BORDER_CONSTANT, 
+                                   value=[0, 0, 0])
     processed_img = img[y-upper_margin:y+h+lower_margin, x-left_margin:x+w+right_margin]
     
-    return processed_img
+    return img_crop
 
 def image_resizer(file, width, height, dpi):
     

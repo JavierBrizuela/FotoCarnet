@@ -19,8 +19,8 @@ def process_image():
     percent = int(request.form.get('porcentaje'))
     
     image_croped = image_crop(file, width, height, dpi, percent)
-    image_resized = image_resizer(image_croped, width, height, dpi)
-    image_process = image_code(image_resized)
+    #image_resized = image_resizer(image_croped, width, height, dpi)
+    image_process = image_code(image_croped)
     
     return jsonify({
         'processed_image': image_process,
