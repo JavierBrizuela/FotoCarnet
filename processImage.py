@@ -12,44 +12,40 @@ def image_crop(file, width, height, dpi, percent):
     if len(face) != 1:
         return None
     x, y, w, h = face[0]
+    # Correjir la región de la cara
     margin = 0.2
-    # Calcular coordenadas de la región de cara
-    x = x - int(w * margin)
     y = y - int(h * margin)
-    w = w + int(w * margin * 2)
     h = h + int(h * margin * 2)
-    # Recortar imagen
+    # Definir constantes para recortar imagen
     aspect_ratio = width / height
     height_orig = int((h * 100) / percent)
     width_orig = int(height_orig * aspect_ratio)
-    print('altura de la cabeza ' + str(h))
-    print('altura de la foto ' + str(height_orig))
-    upper_margin = int((height_orig - h) * 0.3)
-    lower_margin = int((height_orig - h) * 0.7)
-    left_margin = int((width_orig - w) * 0.5)
-    right_margin = int((width_orig - w) * 0.5)
-    print('margen superior' + str(upper_margin))
-    print('margen inferior' + str(lower_margin))
-    #if y - upper_margin < 0 or x - left_margin < 0 or y+h+lower_margin > img.shape[0] or x+w+right_margin > img.shape[1]:
-    #    return None
-    x1 = max(0, x - left_margin)
-    y1 = max(0, y - upper_margin)
-    x2 = min(img.shape[1], x + w + right_margin)
-    y2 = min(img.shape[0], y + h + lower_margin)    
-    img_crop = img[y1:y2, x1:x2]
+    side_margin = int((width_orig - w) * 0.5)
+    height_diff = height_orig - h
+    x = x - side_margin
+    y = y - int(height_diff * 0.3)
+    w =  (side_margin * 2) + w 
+    h =  height_diff + h
+    # Recortar imagen    
+    processed_img = img[y:y+h, x:x+w]
+    x1 = max(0, x)
+    y1 = max(0, y)
+    x2 = min(img.shape[1], x + w)
+    y2 = min(img.shape[0], y + h)    
     
+    img_crop = img[y1:y2, x1:x2]
+    # Agregar padding a la imagen
     pad_left = max(0, x1 - x)
     pad_right = max(0, (x + w) - x2)
     pad_top = max(0, y1 - y)
-    pad_bottom = max(0, (y + h) - y2)
+    pad_bottom = max(0, (h + y) - y2)
     
     img_padded = cv.copyMakeBorder(img_crop, 
                                    pad_top, pad_bottom, pad_left, pad_right, 
                                    cv.BORDER_CONSTANT, 
                                    value=[0, 0, 0])
-    processed_img = img[y-upper_margin:y+h+lower_margin, x-left_margin:x+w+right_margin]
     
-    return img_crop
+    return img_padded
 
 def image_resizer(file, width, height, dpi):
     
@@ -58,11 +54,11 @@ def image_resizer(file, width, height, dpi):
     height_px = int(height * dpc)
     
     # Redimensionar imagen
-    
     image_resized = cv.resize(file, (width_px, height_px))
     return image_resized
 
 def image_code(file):
+    
     # Codificar imagen resultante
     _, buffer = cv.imencode('.jpg', file)
     encoded_image = base64.b64encode(buffer).decode('utf-8')
