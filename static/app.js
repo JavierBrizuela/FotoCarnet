@@ -53,6 +53,7 @@ async function handleImage(file) {
     const alto = document.getElementById('alto').value;
     const dpi = document.getElementById('dpi').value;
     const porcentaje = document.getElementById('porcentaje').value;
+    const bg_color = document.getElementById('bg-color').value;
 
     // Agregar datos del formulario a formData
     formData.append('unidad', unidad);
@@ -60,6 +61,7 @@ async function handleImage(file) {
     formData.append('alto', alto);
     formData.append('dpi', dpi);
     formData.append('porcentaje', porcentaje);
+    formData.append('bg_color', bg_color);
     
     try {
         const response = await fetch('/process', {
@@ -94,6 +96,11 @@ function validateForm() {
     } else {
         submitButton.disabled = true;
     }
+}
+
+// Seleccionar color de fondo predefinido
+function selectBgColor(bg_color) {
+    document.getElementById("bg-color").value = bg_color;
 }
 
 // Agregar eventos de cambio a los campos del formulario para validar

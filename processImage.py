@@ -3,6 +3,12 @@ import numpy as np
 import base64
 import mediapipe as mp
 
+def hex_to_bgr(hex_color):
+    hex_color = hex_color.lstrip('#')
+    if len(hex_color) == 3:  # Formato corto (#FFF → #FFFFFF)
+        hex_color = ''.join([c * 2 for c in hex_color])
+    return tuple(int(hex_color[i:i+2], 16) for i in (4, 2, 0))
+
 def image_crop(img , width, height, percent):
     # Convertir imagen rgb a gris
     img_grey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)

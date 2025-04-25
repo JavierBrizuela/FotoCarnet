@@ -29,6 +29,10 @@
             <input type="number" id="dpi" placeholder="dpi" value="300" required>
             <label for="porcentaje">Porcentaje de cabeza</label>
             <input type="number" id="porcentaje" placeholder="porcentaje de cabeza" required>
+            <label for="bg-color">Color de fondo</label>
+            <input type="color" id="bg-color" value="#ffffff">
+            <button type="button" class="color-option" style="background-color: #ffffff" onclick="selectBgColor('#ffffff')"></button>
+            <button type="button" class="color-option" style="background-color: #87CEEB" onclick="selectBgColor('#87CEEB')"></button>
             <button id="submit" disabled>Generar</button>
         </div>
         <div id="preview"></div>
