@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foto-Carnet</title>
-    <link rel="stylesheet" href={{ url_for('static', filename='style.css') }}>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
@@ -14,21 +14,32 @@
             <input type="file" id="file-input" accept="image/*" hidden>
         </div>
         <div id="form-zone">
-            <label type="dropdown" for="template">Tipo</label>
-            <select id="template">
-                <option value="carnet">Carnet</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="visa">Visa</option>
-            <input type="radio" id="unidad" name="unidad" value="cm" checked>cm
-            <input type="radio" id="unidad" name="unidad" value="pulgada">pulgada
-            <label for="ancho">Ancho</label>
-            <input type="text" id="ancho" placeholder="ancho de la imagen" required>
-            <label for="alto">Alto</label>
-            <input type="text" id="alto" placeholder="alto de la imagen" required>
+            <label type="dropdown" for="templates">Plantillas</label>
+            <select id="templates">
+                <option value="" disabled selected>Selecciona una plantilla</option>
+                {% for key, value in templates.items() %}
+                <option 
+                value="{{ key }}"
+                data-width="{{ value.width }}"
+                data-height="{{ value.height }}"
+                data-percentage="{{ value.percentage }}"
+                data-bg-color="{{ value['bg-color'] }}"
+                data-dpi="{{ value.dpi }}"
+                data-unit="{{ value.unit }}"
+            >
+                {{ key|title }}
+            </option>
+                {% endfor %}
+            <input type="radio" id="unit" name="unit" value="cm" checked>cm
+            <input type="radio" id="unit" name="unit" value="inch">pulgada
+            <label for="width">Ancho</label>
+            <input type="text" id="width" placeholder="ancho de la imagen" required>
+            <label for="height">Alto</label>
+            <input type="text" id="height" placeholder="alto de la imagen" required>
             <label for="dpi">Default DPI</label>
             <input type="number" id="dpi" placeholder="dpi" value="300" required>
-            <label for="porcentaje">Porcentaje de cabeza</label>
-            <input type="number" id="porcentaje" placeholder="porcentaje de cabeza" required>
+            <label for="percentage">Porcentaje de cabeza</label>
+            <input type="number" id="percentage" placeholder="porcentaje de cabeza" required>
             <label for="bg-color">Color de fondo</label>
             <input type="color" id="bg-color" value="#ffffff">
             <button type="button" class="color-option" style="background-color: #ffffff" onclick="selectBgColor('#ffffff')"></button>
@@ -37,6 +48,6 @@
         </div>
         <div id="preview"></div>
     </div>
-    <script src={{ url_for('static', filename='app.js') }}></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+from flask import jsonify
 import cv2 as cv
 import numpy as np
 import base64
@@ -9,21 +10,40 @@ def hex_to_bgr(hex_color):
         hex_color = ''.join([c * 2 for c in hex_color])
     return tuple(int(hex_color[i:i+2], 16) for i in (4, 2, 0))
 
-def image_crop(img , width, height, percent):
-    # Convertir imagen rgb a gris
-    img_grey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    # Cargar clasificador de rostros
-    face_cascade = cv.CascadeClassifier('Data/haarcascade_frontalface_default.xml')
-    face = face_cascade.detectMultiScale(img_grey, 1.1, 4)
+def detect_face(img):
     
-    if len(face) != 1:
-        
+    # Convertir a RGB para MediaPipe
+    img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    # Cargar clasificador de rostros
+    mp_face_detection = mp.solutions.face_detection
+    face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
+    face = face_detection.process(img_rgb)
+    
+    if face.detections:
+        # Extraer coordenadas de la cara detectada
+        detection = face.detections[0]
+        bboxC = detection.location_data.relative_bounding_box
+        x = int(bboxC.xmin * img.shape[1])
+        y = int(bboxC.ymin * img.shape[0])
+        w = int(bboxC.width * img.shape[1])
+        h = int(bboxC.height * img.shape[0])
+        print(f"Rostro detectado: {x}, {y}, {w}, {h}")
+        return x, y, w, h
+    else:
+        print("No se detectó ningún rostro")
         return None
-    x, y, w, h = face[0]
+def show_face(img, x, y, w, h):
+    # Dibujar un rectángulo alrededor de la cara detectada
+    cv.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    return img
+
+def image_crop(img , width, height, percent, x, y, w, h):
+        
     # Correjir la región de la cara
-    margin = 0.2
+    margin = 0.5
     y = y - int(h * margin)
-    h = h + int(h * margin * 2)
+    h = h + int(h * margin)
+    
     # Definir constantes para recortar imagen
     aspect_ratio = width / height
     height_orig = int((h * 100) / percent)
@@ -31,11 +51,13 @@ def image_crop(img , width, height, percent):
     side_margin = int((width_orig - w) * 0.5)
     height_diff = height_orig - h
     x = x - side_margin
-    y = y - int(height_diff * 0.3)
+    y = y - int(height_diff * 0.2)
     w =  (side_margin * 2) + w 
     h =  height_diff + h
+    
     # Si la región a recortar está fuera de los límites de la imagen, agregar padding
     if x < 0 or y < 0 or w > img.shape[1] or h > img.shape[0]:
+        print("Recortando imagen con padding")
         img_croped = image_padding(img, x, y, w, h)
     else:
         img_croped = img[y:y + h, x:x + w]
@@ -81,16 +103,16 @@ def image_padding(img, x, y, w, h):
     )
     return inpainted_face
 
-def remove_background(file , bg_color=[255, 255, 255], blur_amount=15):
+def remove_background(file , blur_amount=15):
     """
-    Remueve el fondo de una imagen con una persona y lo reemplaza con el color especificado.
+    Crea una mascara para el posterior recorte o fusion.
     
     Args:
-        img: Imagen en formato OpenCV (BGR)
-        bg_color: Color de fondo deseado en formato BGR [B, G, R]
+        file: archivo de la imagen
         blur_amount: Cantidad de desenfoque aplicado a la máscara (debe ser impar)
     Returns:
-        Imagen con el fondo reemplazado
+        mask: mascara de segmentación
+        image: Imagen original
     """
      # Leer imagen
     img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
@@ -103,32 +125,49 @@ def remove_background(file , bg_color=[255, 255, 255], blur_amount=15):
     mask = result.segmentation_mask
     # Aplicar suavizado adaptativo a la máscara para mejorar los bordes
     blurred = cv.GaussianBlur(mask, (blur_amount, blur_amount), 0)
-    blurred = blurred[:, :, np.newaxis]  # Convertir a 3 canales
+    mask = blurred[:, :, np.newaxis]  # Convertir a 3 canales
+    # Liberar recursos
+    selfie_segmentation.close()
+    return mask, img
+
+def fusion_image_background(img, mask, bg_color):
+    
     # Crear fondo con el color de fondo
     bg_image = np.ones(img.shape, dtype=np.uint8)
     bg_image[:] = bg_color  # Color en BGR
+    
     # crear fusion entre la imagen original y el fondo
-    output_image = img * blurred + bg_image * (1 - blurred)
+    output_image = img * mask + bg_image * (1 - mask)
     output_image = output_image.astype(np.uint8)
-    
-    # Liberar recursos
-    selfie_segmentation.close()
-    
     return output_image
 
-def image_resizer(file, width, height, dpi):
-    
+def image_resizer(img, width, height, dpi):
+    # Verificar que file sea una imagen válida
+    if not isinstance(img, np.ndarray):
+        print("Error: La imagen de entrada no es válida")
+        return None
+    # Calcular dimensiones en píxeles
     dpc = int(dpi / 2.54)
     width_px = int(width * dpc)
     height_px = int(height * dpc)
     
     # Redimensionar imagen
-    image_resized = cv.resize(file, (width_px, height_px))
+    image_resized = cv.resize(img, (width_px, height_px))
     return image_resized
 
 def image_code(file):
+    # Verificar que file sea una imagen válida
+    if file is None or not isinstance(file, np.ndarray) or file.size == 0:
+        print("Error: La imagen de entrada para codificar es inválida o está vacía")
+        return None
     
-    # Codificar imagen resultante
-    _, buffer = cv.imencode('.jpg', file)
-    encoded_image = base64.b64encode(buffer).decode('utf-8')
-    return encoded_image
+    try:
+        # Codificar imagen resultante
+        _, buffer = cv.imencode('.jpg', file)
+        encoded_image = base64.b64encode(buffer).decode('utf-8')
+        return encoded_image
+    except Exception as e:
+        print(f"Error al codificar la imagen: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None

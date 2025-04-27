@@ -1,28 +1,58 @@
+import json
 from flask import Flask, request, jsonify, render_template
-from processImage import image_crop, image_resizer, image_code, remove_background, hex_to_bgr
+import processImage as pi
 app = Flask(__name__)
+
+def load_template():
+    with open('config/templates.json', 'r') as file:
+        return json.load(file)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
-
+    templates = load_template()
+    return render_template('index.html', templates=templates)
+    
 @app.route('/process', methods=['POST'])
 def process_image():
     
     if 'image' not in request.files:
         return jsonify({'error': 'No image provided'}), 400
-    
+    # Leer archivo de imagen y parámetros
     file = request.files['image']
-    width = float(request.form.get('ancho'))
-    height = float(request.form.get('alto'))
+    width = float(request.form.get('width'))
+    height = float(request.form.get('height'))
     dpi = int(request.form.get('dpi'))
-    percent = int(request.form.get('porcentaje'))
-    hex_color = request.form.get('bg_color')
-    bg_color = hex_to_bgr(hex_color) #[255, 128, 64]
-    selfie_segmentation = remove_background(file, bg_color)
-    image_croped = image_crop(selfie_segmentation, width, height, percent)
-    image_resized = image_resizer(image_croped, width, height, dpi)
-    image_process = image_code(image_resized)
+    percent = int(request.form.get('percentage'))
+    hex_color = request.form.get('bg-color')
+    
+    # Convertir color hexadecimal a BGR
+    bg_color = pi.hex_to_bgr(hex_color) #[255, 128, 64]
+    
+    # Procesar imagen - Obtener mascara
+    mask, image = pi.remove_background(file)
+    if image is None or mask is None:
+            return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
+    
+    # Fusionar mascara con el color de fondo
+    selfie_segmentation = pi.fusion_image_background(image, mask, bg_color)
+    if selfie_segmentation is None:
+            return jsonify({'error': 'Error al fusionar la imagen con el fondo'}), 500
+    
+    #detección de rostro
+    x, y, w, h = pi.detect_face(selfie_segmentation)
+    face = pi.show_face(selfie_segmentation, x, y, w, h)
+    # Recortar imagen con los datos de deteccion de rostro
+    image_croped = pi.image_crop(selfie_segmentation, width, height, percent, x ,y , w, h)
+    if image_croped is None:
+            return jsonify({'error': 'Error al recortar la imagen'}), 500
+    
+    # Redimensionar imagen con el dpi especificado
+    image_resized = pi.image_resizer(image_croped, width, height, dpi)
+    if image_resized is None:
+            return jsonify({'error': 'Error al redimensionar la imagen'}), 500
+    
+    # Aplicar codificación de imagen para la respuesta
+    image_process = pi.image_code(image_resized)
     return jsonify({
         'processed_image': image_process,
         'message': 'Procesamiento exitoso'

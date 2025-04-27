@@ -48,27 +48,26 @@ async function handleImage(file) {
     formData.append('image', file);
 
     // Obtener datos del formulario
-    const unidad = document.querySelector('input[name="unidad"]:checked').value;
-    const ancho = document.getElementById('ancho').value;
-    const alto = document.getElementById('alto').value;
+    const unit = document.querySelector('input[name="unit"]:checked').value;
+    const width = document.getElementById('width').value;
+    const height = document.getElementById('height').value;
     const dpi = document.getElementById('dpi').value;
-    const porcentaje = document.getElementById('porcentaje').value;
-    const bg_color = document.getElementById('bg-color').value;
+    const percentage = document.getElementById('percentage').value;
+    const bgColor = document.getElementById('bg-color').value;
 
     // Agregar datos del formulario a formData
-    formData.append('unidad', unidad);
-    formData.append('ancho', ancho);
-    formData.append('alto', alto);
+    formData.append('unit', unit);
+    formData.append('width', width);
+    formData.append('height', height);
     formData.append('dpi', dpi);
-    formData.append('porcentaje', porcentaje);
-    formData.append('bg_color', bg_color);
+    formData.append('percentage', percentage);
+    formData.append('bg-color', bgColor);
     
     try {
         const response = await fetch('/process', {
             method: 'POST',
             body: formData
         });
-        
         const data = await response.json();
         
         //show image
@@ -85,13 +84,15 @@ async function handleImage(file) {
 
 // Función para validar el formulario
 function validateForm() {
-    const unidad = document.querySelector('input[name="unidad"]:checked');
-    const ancho = document.getElementById('ancho').value;
-    const alto = document.getElementById('alto').value;
+    const unit = document.querySelector('input[name="unit"]:checked');
+    const width = document.getElementById('width').value;
+    const height = document.getElementById('height').value;
     const dpi = document.getElementById('dpi').value;
-    const porcentaje = document.getElementById('porcentaje').value;
+    const percentage = document.getElementById('percentage').value;
+    const bgColor = document.getElementById('bg-color').value;
+    const selectedFile = FileInput.files[0];
 
-    if (unidad && ancho && alto && dpi && porcentaje && selectedFile) {
+    if (unit && width && height && dpi && percentage && bgColor && selectedFile) {
         submitButton.disabled = false;
     } else {
         submitButton.disabled = true;
@@ -99,8 +100,8 @@ function validateForm() {
 }
 
 // Seleccionar color de fondo predefinido
-function selectBgColor(bg_color) {
-    document.getElementById("bg-color").value = bg_color;
+function selectBgColor(bgColor) {
+    document.getElementById("bg-color").value = bgColor;
 }
 
 // Agregar eventos de cambio a los campos del formulario para validar
@@ -116,4 +117,17 @@ submitButton.addEventListener('click', (e) => {
     if (selectedFile) {
         handleImage(selectedFile);
     }
+});
+
+//Actualiza los valores de los campos cuando cambia el dropdown
+document.getElementById('templates').addEventListener('change', (e) => {
+    const select = e.target;
+    const selectedOption = select.options[select.selectedIndex];
+    // Actualizar los valores de los campos del formulario con los datos del template seleccionado
+    document.getElementById('width').value = selectedOption.dataset.width;
+    document.getElementById('height').value = selectedOption.dataset.height;
+    document.getElementById('percentage').value = selectedOption.dataset.percentage;
+    document.getElementById('dpi').value = selectedOption.dataset.dpi;
+    document.getElementById('bg-color').value = selectedOption.dataset.bgColor;
+    validateForm();
 });
