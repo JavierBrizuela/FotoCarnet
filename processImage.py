@@ -32,6 +32,7 @@ def detect_face(img):
     else:
         print("No se detectó ningún rostro")
         return None
+
 def show_face(img, x, y, w, h):
     # Dibujar un rectángulo alrededor de la cara detectada
     cv.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)

@@ -24,6 +24,10 @@ def process_image():
     dpi = int(request.form.get('dpi'))
     percent = int(request.form.get('percentage'))
     hex_color = request.form.get('bg-color')
+    unit = request.form.get('unit')
+    if unit == 'inch':
+        width = width * 2.54
+        height = height * 2.54
     
     # Convertir color hexadecimal a BGR
     bg_color = pi.hex_to_bgr(hex_color) #[255, 128, 64]
@@ -40,7 +44,7 @@ def process_image():
     
     #detección de rostro
     x, y, w, h = pi.detect_face(selfie_segmentation)
-    face = pi.show_face(selfie_segmentation, x, y, w, h)
+    #face = pi.show_face(selfie_segmentation, x, y, w, h)
     # Recortar imagen con los datos de deteccion de rostro
     image_croped = pi.image_crop(selfie_segmentation, width, height, percent, x ,y , w, h)
     if image_croped is None:

@@ -130,4 +130,8 @@ document.getElementById('templates').addEventListener('change', (e) => {
     document.getElementById('dpi').value = selectedOption.dataset.dpi;
     document.getElementById('bg-color').value = selectedOption.dataset.bgColor;
     validateForm();
+    // Actualizar radios de unidad
+    document.querySelectorAll('input[name="unit"]').forEach(radio => {
+        radio.checked = (radio.value === selectedOption.dataset.unit);
+    });
 });

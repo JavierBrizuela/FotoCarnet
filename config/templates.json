@@ -8,12 +8,12 @@
         "unit": "cm"
     },
     "Pasaporte USA": {
-        "width": 5,
-        "height": 5,
+        "width": 2,
+        "height": 2,
         "percentage": 70,
         "bg-color": "#ffffff",
         "dpi": 300,
-        "unit": "cm"
+        "unit": "inch"
     },
     "Pasaporte España": {
         "width": 5,
