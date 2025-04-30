@@ -2,9 +2,10 @@ import json
 from flask import Flask, request, jsonify, render_template
 import processImage as pi
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False  # Para respuestas JSON con caracteres especiales
 
 def load_template():
-    with open('config/templates.json', 'r') as file:
+    with open('config/templates.json', 'r', encoding='utf-8') as file:
         return json.load(file)
 
 @app.route('/')
