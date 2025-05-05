@@ -4,49 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foto-Carnet</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-
-    <div id="container">
-        <div id="drop-zone">
-            Arrastra aquí tu imagen o haz clic para seleccionar
-            <input type="file" id="file-input" accept="image/*" hidden>
+<body class="bg-light">
+    <div class="container-fluid py-5">
+        <div class="row g-4">
+            <!--  Imagen de entrada  -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100" >
+                    <div class="card-header bg-white border-bottom-0 pb-0">
+                        <h5 class="card-title">Imagen de entrada</h5>
+                    </div>
+                    <div class="card-body bg-white">
+                        <div id="drop-zone">
+                            <div class="upload-placeholder">
+                                <i class="bi bi-cloud-arrow-up display-4 text-muted mb-3"></i>
+                                <p class="mb-1">Arrastra aquí tu imagen</p>
+                                <span class="text-muted small">o haz clic para seleccionar</span>
+                                <input type="file" id="file-input" accept="image/*" class="d-none" hidden>
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--  Formulario de configuracion  -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100" id="form-zone">
+                    <div class="card-header bg-white border-bottom-0 pb-0">
+                        <h5 class="card-title">Configuración</h5>
+                        <span class="text-muted small">Ajusta los parámetros de procesamiento</span>
+                    </div>
+                    <!-- Plamtillas-->
+                    <div class="card-body bg-white h-100">
+                        <label type="dropdown" class="form-label" for="templates">Plantillas</label>
+                        <select class="form-select  mb-2" id="templates">
+                            <option value="" disabled selected>Selecciona una plantilla</option>
+                            {% for key, value in templates.items() %}
+                            <option 
+                            value="{{ key }}"
+                            data-width="{{ value.width }}"
+                            data-height="{{ value.height }}"
+                            data-percentage="{{ value.percentage }}"
+                            data-bg-color="{{ value['bg-color'] }}"
+                            data-dpi="{{ value.dpi }}"
+                            data-unit="{{ value.unit }}"
+                            >{{ key|title }}</option>
+                            {% endfor %}
+                        </select>
+                        <!-- Unidad de Medida -->
+                        <div class="mb-2">
+                            <label class="form-label">Unidad de medida</label>
+                            <div class="d-flex">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="unit" id="unit" value="cm" checked>
+                                    <label class="form-check-label" for="cm">cm</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="unit" id="unit" value="inch">
+                                    <label class="form-check-label" for="inch">pulgada</label>
+                                </div>
+                            </div>
+                        </div>     
+                        <!-- Campos de entrada para ancho, alto, dpi y porcentaje de cabeza -->             
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="width">Ancho</label>
+                                <input class="form-control" type="text" id="width" placeholder="ancho de la imagen" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="height">Alto</label>
+                                <input class="form-control" type="text" id="height" placeholder="alto de la imagen" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="dpi">Default DPI</label>
+                                <input class="form-control" type="number" id="dpi" placeholder="dpi" value="300" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="percentage">Porcentaje de cabeza</label>
+                                <input class="form-control" type="number" id="percentage" placeholder="porcentaje de cabeza" required>
+                            </div>
+                        </div>
+                        <div class="row  mb-3 me-2">
+                            <div class="col-md-6">
+                                <p class="form-label">Color de fondo</p>
+                                <div class="d-flex ">
+                                <button class="form-control form-control-color" type="button" class="color-option" style="background-color: #ffffff" onclick="selectBgColor('#ffffff')"></button>
+                                <button class="form-control form-control-color" type="button" class="color-option" style="background-color: #87CEEB" onclick="selectBgColor('#87CEEB')"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 ">
+                                <label class="form-label" for="bg-color">Color personalisado</label>
+                                <input class="form-control form-control-color" type="color" id="bg-color" value="#ffffff">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100" id="submit" disabled>Generar</button>
+                    </div>
+                </div>
+            </div>
+            <!--  Imagen de salida  -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom-0 pb-0">
+                        <h5 class="card-title">Imagen de salida</h5>
+                    </div>
+                    <div class="card-body bg-white">
+                        <div id="preview-zone">
+                            <div class="preview-placeholder">
+                                <i class="bi bi-file-earmark-image display-4 text-muted mb-3"></i>
+                                <p class="mb-1">El resultado se mostrará aquí</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
         </div>
-        <div id="form-zone">
-            <label type="dropdown" for="templates">Plantillas</label>
-            <select id="templates">
-                <option value="" disabled selected>Selecciona una plantilla</option>
-                {% for key, value in templates.items() %}
-                <option 
-                value="{{ key }}"
-                data-width="{{ value.width }}"
-                data-height="{{ value.height }}"
-                data-percentage="{{ value.percentage }}"
-                data-bg-color="{{ value['bg-color'] }}"
-                data-dpi="{{ value.dpi }}"
-                data-unit="{{ value.unit }}"
-            >
-                {{ key|title }}
-            </option>
-                {% endfor %}
-            <input type="radio" id="unit" name="unit" value="cm" checked>cm
-            <input type="radio" id="unit" name="unit" value="inch">pulgada
-            <label for="width">Ancho</label>
-            <input type="text" id="width" placeholder="ancho de la imagen" required>
-            <label for="height">Alto</label>
-            <input type="text" id="height" placeholder="alto de la imagen" required>
-            <label for="dpi">Default DPI</label>
-            <input type="number" id="dpi" placeholder="dpi" value="300" required>
-            <label for="percentage">Porcentaje de cabeza</label>
-            <input type="number" id="percentage" placeholder="porcentaje de cabeza" required>
-            <label for="bg-color">Color de fondo</label>
-            <input type="color" id="bg-color" value="#ffffff">
-            <button type="button" class="color-option" style="background-color: #ffffff" onclick="selectBgColor('#ffffff')"></button>
-            <button type="button" class="color-option" style="background-color: #87CEEB" onclick="selectBgColor('#87CEEB')"></button>
-            <button id="submit" disabled>Generar</button>
-        </div>
-        <div id="preview"></div>
     </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

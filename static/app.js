@@ -1,6 +1,6 @@
 const DropZone = document.getElementById('drop-zone');
 const FileInput = document.getElementById('file-input');
-const preview = document.getElementById('preview');
+const previewZone = document.getElementById('preview-zone');
 const formZone = document.getElementById('form-zone');
 const submitButton = document.getElementById('submit');
 let selectedFile = null;
@@ -73,8 +73,8 @@ async function handleImage(file) {
         //show image
         const img = document.createElement('img');
         img.src = `data:image/jpeg;base64,${data.processed_image}`;
-        preview.innerHTML = 'imagen procesada:';
-        preview.appendChild(img);
+        previewZone.innerHTML = '';
+        previewZone.appendChild(img);
         
     } catch (error) {
         console.error('Error during fetch:', error);
