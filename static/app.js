@@ -90,8 +90,7 @@ function validateForm() {
     const dpi = document.getElementById('dpi').value;
     const percentage = document.getElementById('percentage').value;
     const bgColor = document.getElementById('bg-color').value;
-    const selectedFile = FileInput.files[0];
-
+    
     if (unit && width && height && dpi && percentage && bgColor && selectedFile) {
         submitButton.disabled = false;
     } else {

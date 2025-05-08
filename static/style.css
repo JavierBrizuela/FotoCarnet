@@ -96,11 +96,6 @@
     overflow: hidden; /* Controla el desbordamiento */
   }
   
-  .card-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-color);
-  }
-  
   /* Upload Area */
   #drop-zone {
     border: 2px dashed #dee2e6;
