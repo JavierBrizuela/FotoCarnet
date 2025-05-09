@@ -5,6 +5,15 @@ const formZone = document.getElementById("form-zone");
 const submitButton = document.getElementById("submit");
 let selectedFile = null;
 
+// Estado de validación
+const validationState = {
+  width: false,
+  height: false,
+  dpi: false,
+  percentage: false,
+  selectedFile: false
+};
+
 // grag and drop event listener
 DropZone.addEventListener("dragover", (e) => {
   e.preventDefault();
@@ -30,22 +39,26 @@ DropZone.addEventListener("drop", (e) => {
 DropZone.addEventListener("click", (e) => {
   FileInput.click();
 });
+
 // file input change event listener
 FileInput.addEventListener("change", (e) => {
   selectedFile = FileInput.files[0];
   showImage(selectedFile);
   validateForm();
 });
+
+// Agrega una imagen al dropZone
 async function showImage(file) {
   const img = document.createElement("img");
   img.src = URL.createObjectURL(file);
   DropZone.innerHTML = "";
   DropZone.appendChild(img);
+  validationState.selectedFile = true;
 }
+
+// Hace la petición al servidor para procesar la imagen y la muestra en el previewZone
 async function handleImage(file) {
   const formData = new FormData();
-  formData.append("image", file);
-
   // Obtener datos del formulario
   const unit = document.querySelector('input[name="unit"]:checked').value;
   const width = document.getElementById("width").value;
@@ -53,7 +66,6 @@ async function handleImage(file) {
   const dpi = document.getElementById("dpi").value;
   const percentage = document.getElementById("percentage").value;
   const bgColor = document.getElementById("bg-color").value;
-
   // Agregar datos del formulario a formData
   formData.append("unit", unit);
   formData.append("width", width);
@@ -61,6 +73,7 @@ async function handleImage(file) {
   formData.append("dpi", dpi);
   formData.append("percentage", percentage);
   formData.append("bg-color", bgColor);
+  formData.append("image", file);
 
   try {
     const response = await fetch("/process", {
@@ -80,104 +93,57 @@ async function handleImage(file) {
   }
 }
 
-// Estado de validación
-const validationState = {
-  width: false,
-  height: false,
-  dpi: false,
-  percentage: false,
-};
+// Función para validar números decimales
+function validateDecimal(input, min, max) {
+  const value = parseFloat(input.value);
+  console.log(input);
+  const isValid = !isNaN(value) && value >= min && value <= max;
+  
+  if (isValid) {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      validationState[input.id] = true;
+  } else {
+      input.classList.remove('is-valid');
+      input.classList.add('is-invalid');
+      validationState[input.id] = false;
+  }
+}
+
+// Función para validar números enteros
+function validateInteger(input, min, max) {
+  const value = parseInt(input.value);
+  const isInteger = String(value) === input.value || Number.isInteger(parseFloat(input.value));
+  const isValid = !isNaN(value) && isInteger && value >= min && value <= max;
+  
+  if (isValid) {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      validationState[input.id] = true;
+  } else {
+      input.classList.remove('is-valid');
+      input.classList.add('is-invalid');
+      validationState[input.id] = false;
+  }
+}
 
 // Función para validar el formulario
 function validateForm() {
   const isFormValid = Object.values(validationState).every(
     (state) => state === true
   );
-  submitButton.disabled = !(isFormValid && selectedFile);
+  submitButton.disabled = !isFormValid;
   return isFormValid;
 }
-
-// Validación específica para el ancho (entre 1 y 10)
-function validateWidth() {
-  const value = width.value.trim();
-  const numValue = parseFloat(value);
-
-  // Verificar si es un número y está en el rango válido
-  if (numValue >= 1 && numValue <= 10) {
-    width.classList.add("is-valid");
-    width.classList.remove("is-invalid");
-    validationState.width = true;
-  } else {
-    width.classList.add("is-invalid");
-    width.classList.remove("is-valid");
-    validationState.width = false;
-  }
-
-  validateForm();
-}
-
-// Validación específica para el alto (entre 1 y 10)
-function validateHeight() {
-  const value = height.value.trim();
-  const numValue = parseFloat(value);
-
-  // Verificar si es un número y está en el rango válido
-  if (numValue >= 1 && numValue <= 10) {
-    height.classList.add("is-valid");
-    height.classList.remove("is-invalid");
-    validationState.height = true;
-  } else {
-    height.classList.add("is-invalid");
-    height.classList.remove("is-valid");
-    validationState.height = false;
-  }
-
-  validateForm();
-}
-
-// Validación específica para el dpi (entre 72 y 600)
-function validateDPI() {
-  const value = dpi.value.trim();
-  const numValue = parseFloat(value);
-
-  // Verificar si es un número y está en el rango válido
-  if (numValue >= 72 && numValue <= 600) {
-    dpi.classList.add("is-valid");
-    dpi.classList.remove("is-invalid");
-    validationState.dpi = true;
-  } else {
-    dpi.classList.add("is-invalid");
-    dpi.classList.remove("is-valid");
-    validationState.dpi = false;
-  }
-
-  validateForm();
-}
-
-// Validación específica para el porcentage (entre 1 y 100)
-function validatePercentage() {
-  const value = percentage.value.trim();
-  const numValue = parseFloat(value);
-
-  // Verificar si es un número y está en el rango válido
-  if (numValue >= 1 && numValue <= 100) {
-    percentage.classList.add("is-valid");
-    percentage.classList.remove("is-invalid");
-    validationState.percentage = true;
-  } else {
-    percentage.classList.add("is-invalid");
-    percentage.classList.remove("is-valid");
-    validationState.percentage = false;
-  }
-
-  validateForm();
-}
-
+const widthInput = document.getElementById("width");
+const heightInput = document.getElementById("height");
+const dpiInput = document.getElementById("dpi");
+const percentageInput = document.getElementById("percentage");
 // Event listeners para validar mientras se escribe
-width.addEventListener("input", validateWidth);
-height.addEventListener("input", validateHeight);
-dpi.addEventListener("input", validateDPI);
-percentage.addEventListener("input", validatePercentage);
+widthInput.addEventListener("input",() => validateDecimal(widthInput, 1, 10));
+heightInput.addEventListener("input",() => validateDecimal(heightInput, 1, 10));
+dpiInput.addEventListener("input",() => validateInteger(dpiInput, 72, 600));
+percentageInput.addEventListener("input",() => validateInteger(percentageInput, 1, 100));
 
 // Seleccionar color de fondo predefinido
 function selectBgColor(bgColor) {
@@ -196,9 +162,7 @@ validateForm();
 
 submitButton.addEventListener("click", (e) => {
   e.preventDefault();
-  if (selectedFile) {
-    handleImage(selectedFile);
-  }
+  handleImage(selectedFile);
 });
 
 //Actualiza los valores de los campos cuando cambia el dropdown
@@ -212,11 +176,10 @@ document.getElementById("templates").addEventListener("change", (e) => {
   document.getElementById("dpi").value = selectedOption.dataset.dpi;
   document.getElementById("bg-color").value = selectedOption.dataset.bgColor;
   // Validar todos los campos para actualizar el estado
-  validateWidth();
-  validateHeight();
-  validateDPI();
-  validatePercentage();
-  validateForm();
+  validateDecimal(widthInput, 1, 10);
+  validateDecimal(heightInput, 1, 10);
+  validateInteger(dpiInput, 72, 600);
+  validateInteger(percentageInput, 1, 100);
   // Actualizar radios de unidad
   document.querySelectorAll('input[name="unit"]').forEach((radio) => {
     radio.checked = radio.value === selectedOption.dataset.unit;
@@ -224,4 +187,4 @@ document.getElementById("templates").addEventListener("change", (e) => {
 });
 
 // Validación inicial
-validateDPI(); // El único campo con valor inicial
+validateInteger(dpiInput, 72, 600); // El único campo con valor inicial

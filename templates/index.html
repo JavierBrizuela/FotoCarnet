@@ -74,21 +74,21 @@
                         <div class="row">
                             <div class="col-md-6 col-sm-6 mb-3">
                                 <label class="form-label" for="width">Ancho(1-10)</label>
-                                <input class="form-control" type="number" id="width" placeholder="ancho de la imagen" required>
+                                <input class="form-control" type="number" id="width" placeholder="ancho de la imagen" min=1 max=10 step=0.1 required>
                             </div>
                             <div class="col-md-6 col-sm-6 mb-3">
                                 <label class="form-label" for="height">Alto(1-10)</label>
-                                <input class="form-control" type="number" id="height" placeholder="alto de la imagen" required>
+                                <input class="form-control" type="number" id="height" placeholder="alto de la imagen" min=1 max=10 step=0.1 required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 col-sm-6 mb-3">
                                 <label class="form-label" for="dpi">DPI(72-600)</label>
-                                <input class="form-control" type="number" id="dpi" placeholder="dpi" value="300" required>
+                                <input class="form-control" type="number" id="dpi" placeholder="dpi" value="300" min=72 max=600 step=1 required>
                             </div>
                             <div class="col-md-6 col-sm-6 mb-3">
                                 <label class="form-label" for="percentage">% de cabeza(1-100)</label>
-                                <input class="form-control" type="number" id="percentage" placeholder="porcentaje de cabeza" required>
+                                <input class="form-control" type="number" id="percentage" placeholder="porcentaje de cabeza" min=1 max=100 step=1 required>
                             </div>
                         </div>
                         <!-- Campos de entrada para color de fondo y color personalizado -->
