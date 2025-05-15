@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import base64
 import mediapipe as mp
+from rembg import remove, new_session
 
 def hex_to_bgr(hex_color):
     hex_color = hex_color.lstrip('#')
@@ -16,7 +17,7 @@ def detect_face(img):
     img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     # Cargar clasificador de rostros
     mp_face_detection = mp.solutions.face_detection
-    face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
+    face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
     face = face_detection.process(img_rgb)
     
     if face.detections:
@@ -103,6 +104,25 @@ def image_padding(img, x, y, w, h):
         flags=cv.INPAINT_TELEA
     )
     return inpainted_face
+
+def rem_bg(file):
+    session = new_session("birefnet-general")
+
+    # Leer imagen
+    img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
+    # Obtener mascara de segmentación
+    mask = remove(
+                    img, 
+                    only_mask=True, 
+                    session=session,
+                    alpha_matting=True,
+                    alpha_matting_foreground_threshold=240,
+                    alpha_matting_background_threshold=10,
+                    alpha_matting_erode_size=10,
+                  )
+    mask = np.array(mask).astype(np.float32) / 255.0  # Normalizar a 0-1
+    mask = mask[:, :, np.newaxis]  # Convertir a 3 canales
+    return mask, img
 
 def remove_background(file , blur_amount=15):
     """

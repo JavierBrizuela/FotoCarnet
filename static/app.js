@@ -180,11 +180,12 @@ document.getElementById("templates").addEventListener("change", (e) => {
   validateDecimal(heightInput, 1, 10);
   validateInteger(dpiInput, 72, 600);
   validateInteger(percentageInput, 1, 100);
+  validateForm();
   // Actualizar radios de unidad
   document.querySelectorAll('input[name="unit"]').forEach((radio) => {
     radio.checked = radio.value === selectedOption.dataset.unit;
   });
 });
 
-// Validación inicial
+// Validación inicial de dpi
 validateInteger(dpiInput, 72, 600); // El único campo con valor inicial

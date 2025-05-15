@@ -34,7 +34,7 @@ def process_image():
     bg_color = pi.hex_to_bgr(hex_color) #[255, 128, 64]
     
     # Procesar imagen - Obtener mascara
-    mask, image = pi.remove_background(file)
+    mask, image = pi.rem_bg(file)
     if image is None or mask is None:
             return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
     
@@ -44,7 +44,7 @@ def process_image():
             return jsonify({'error': 'Error al fusionar la imagen con el fondo'}), 500
     
     #detección de rostro
-    x, y, w, h = pi.detect_face(selfie_segmentation)
+    x, y, w, h = pi.detect_face(image)
     #face = pi.show_face(selfie_segmentation, x, y, w, h)
     # Recortar imagen con los datos de deteccion de rostro
     image_croped = pi.image_crop(selfie_segmentation, width, height, percent, x ,y , w, h)
