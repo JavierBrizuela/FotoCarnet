@@ -165,6 +165,14 @@ submitButton.addEventListener("click", (e) => {
   handleImage(selectedFile);
 });
 
+submitButton.addEventListener("submit", function(event) {
+    // Deshabilitar el botón
+    submitButton.disabled = true;
+    
+    // Opcionalmente cambiar el texto
+    submitButton.innerHTML = "Procesando...";
+});
+
 //Actualiza los valores de los campos cuando cambia el dropdown
 document.getElementById("templates").addEventListener("change", (e) => {
   const select = e.target;

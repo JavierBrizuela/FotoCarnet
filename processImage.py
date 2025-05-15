@@ -11,6 +11,11 @@ def hex_to_bgr(hex_color):
         hex_color = ''.join([c * 2 for c in hex_color])
     return tuple(int(hex_color[i:i+2], 16) for i in (4, 2, 0))
 
+def read_image(file):
+    # Leer imagen
+    img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
+    return img
+
 def detect_face(img):
     
     # Convertir a RGB para MediaPipe
@@ -105,51 +110,29 @@ def image_padding(img, x, y, w, h):
     )
     return inpainted_face
 
-def rem_bg(file):
-    session = new_session("birefnet-general")
-
-    # Leer imagen
-    img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
+def rem_bg(img, bg_color):
+    # "u2net_human_seg" 5seg resultado: regular
+    # "u2net_cloth_seg" problema en mask.shape
+    # "silueta"  2seg resultado: pelo excelente problema en la ropa
+    # "isnet-general-use"  3seg resultado: pelo muy bueno problemas en la ropa pero mejor que silueta
+    # "sam" 3seg resultado malo
+    # "isnet-anime" 3seg resultado: pelo regular bien en ropa pero le baja el contraste a la imagen
+    # "birefnet-portrait" 34seg resultado: excelente
+    # "birefnet-general" 44seg resultado: muy bueno
+    # "birefnet-general-lite" 17seg resultado: muy bueno
+    session = new_session("birefnet-general-lite")
+    bg_color = bg_color + (255,)  # Convertir a formato BGRA
     # Obtener mascara de segmentación
-    mask = remove(
+    img = remove(
                     img, 
-                    only_mask=True, 
                     session=session,
+                    bgcolor=bg_color,
                     alpha_matting=True,
-                    alpha_matting_foreground_threshold=240,
-                    alpha_matting_background_threshold=10,
-                    alpha_matting_erode_size=10,
-                  )
-    mask = np.array(mask).astype(np.float32) / 255.0  # Normalizar a 0-1
-    mask = mask[:, :, np.newaxis]  # Convertir a 3 canales
-    return mask, img
-
-def remove_background(file , blur_amount=15):
-    """
-    Crea una mascara para el posterior recorte o fusion.
-    
-    Args:
-        file: archivo de la imagen
-        blur_amount: Cantidad de desenfoque aplicado a la máscara (debe ser impar)
-    Returns:
-        mask: mascara de segmentación
-        image: Imagen original
-    """
-     # Leer imagen
-    img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
-    
-    # Inicializar MediaPipe Selfie Segmentation
-    selfie_segmentation = mp.solutions.selfie_segmentation
-    selfie_segmentation = selfie_segmentation.SelfieSegmentation(model_selection=0)
-    result = selfie_segmentation.process(img)
-    # Obtener mascara de segmentación
-    mask = result.segmentation_mask
-    # Aplicar suavizado adaptativo a la máscara para mejorar los bordes
-    blurred = cv.GaussianBlur(mask, (blur_amount, blur_amount), 0)
-    mask = blurred[:, :, np.newaxis]  # Convertir a 3 canales
-    # Liberar recursos
-    selfie_segmentation.close()
-    return mask, img
+                    alpha_matting_foreground_threshold=240,  # Valor alto para preservar detalles finos
+                    alpha_matting_background_threshold=10,   # Valor bajo para preservar detalles finos
+                    alpha_matting_erode_size=5               # Valor moderado (balance entre calidad y velocidad)
+                )
+    return img
 
 def fusion_image_background(img, mask, bg_color):
     

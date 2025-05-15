@@ -26,28 +26,22 @@ def process_image():
     percent = int(request.form.get('percentage'))
     hex_color = request.form.get('bg-color')
     unit = request.form.get('unit')
+    # Lleva las unidades a centimetros
     if unit == 'inch':
         width = width * 2.54
         height = height * 2.54
     
-    # Convertir color hexadecimal a BGR
-    bg_color = pi.hex_to_bgr(hex_color) #[255, 128, 64]
-    
-    # Procesar imagen - Obtener mascara
-    mask, image = pi.rem_bg(file)
-    if image is None or mask is None:
-            return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
-    
-    # Fusionar mascara con el color de fondo
-    selfie_segmentation = pi.fusion_image_background(image, mask, bg_color)
-    if selfie_segmentation is None:
-            return jsonify({'error': 'Error al fusionar la imagen con el fondo'}), 500
-    
+    # Cargar imagen desde archivo
+    image = pi.read_image(file)
+     
     #detección de rostro
     x, y, w, h = pi.detect_face(image)
+    
+    # Muestra un rectangulo alrededor de la cara detectada (opcional)
     #face = pi.show_face(selfie_segmentation, x, y, w, h)
+    
     # Recortar imagen con los datos de deteccion de rostro
-    image_croped = pi.image_crop(selfie_segmentation, width, height, percent, x ,y , w, h)
+    image_croped = pi.image_crop(image, width, height, percent, x ,y , w, h)
     if image_croped is None:
             return jsonify({'error': 'Error al recortar la imagen'}), 500
     
@@ -56,8 +50,16 @@ def process_image():
     if image_resized is None:
             return jsonify({'error': 'Error al redimensionar la imagen'}), 500
     
+    # Convertir color hexadecimal a BGR
+    bg_color = pi.hex_to_bgr(hex_color)
+    
+    # Procesar imagen - Obtener mascara
+    image = pi.rem_bg(image_resized, bg_color)
+    if image is None:
+            return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
+    
     # Aplicar codificación de imagen para la respuesta
-    image_process = pi.image_code(image_resized)
+    image_process = pi.image_code(image)
     return jsonify({
         'processed_image': image_process,
         'message': 'Procesamiento exitoso'
