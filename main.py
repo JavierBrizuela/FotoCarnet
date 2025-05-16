@@ -1,6 +1,8 @@
 import json
 from flask import Flask, request, jsonify, render_template
 import processImage as pi
+from imageEnhancer import imageEnhancer
+
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False  # Para respuestas JSON con caracteres especiales
 
@@ -49,7 +51,15 @@ def process_image():
     image_resized = pi.image_resizer(image_croped, width, height, dpi)
     if image_resized is None:
             return jsonify({'error': 'Error al redimensionar la imagen'}), 500
-    
+    # Ajustar brillo, contraste, saturación y nitidez
+    """ image_enhancer = imageEnhancer(
+                                    image_resized, 
+                                    brightness=1.2, 
+                                    contrast=1.2, 
+                                    saturation=1.1, 
+                                    sharpness=1.2, 
+                                    auto_white_balance=False
+                                    ) """
     # Convertir color hexadecimal a BGR
     bg_color = pi.hex_to_bgr(hex_color)
     
