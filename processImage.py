@@ -120,7 +120,7 @@ def rem_bg(img, bg_color):
     # "birefnet-portrait" 34seg resultado: excelente
     # "birefnet-general" 44seg resultado: muy bueno
     # "birefnet-general-lite" 17seg resultado: muy bueno
-    session = new_session("birefnet-general-lite")
+    session = new_session("u2net_human_seg")
     bg_color = bg_color + (255,)  # Convertir a formato BGRA
     # Obtener mascara de segmentación
     img = remove(

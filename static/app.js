@@ -11,7 +11,8 @@ const validationState = {
   height: false,
   dpi: false,
   percentage: false,
-  selectedFile: false
+  selectedFile: false,
+  bgColor: false,
 };
 
 // grag and drop event listener
@@ -127,6 +128,24 @@ function validateInteger(input, min, max) {
   }
 }
 
+// Función para validar el color de fondo
+function validateColor(input) {
+  // Regex para validar formato de color hexadecimal (#RRGGBB o #RGB)
+  const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  const isValid = hexColorRegex.test(input.value);
+  
+  if (isValid) {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+      validationState.bgColor = true;
+  } else {
+      input.classList.remove('is-valid');
+      input.classList.add('is-invalid');
+      validationState.bgColor = false;
+  }
+  validateForm();
+}
+
 // Función para validar el formulario
 function validateForm() {
   const isFormValid = Object.values(validationState).every(
@@ -139,15 +158,17 @@ const widthInput = document.getElementById("width");
 const heightInput = document.getElementById("height");
 const dpiInput = document.getElementById("dpi");
 const percentageInput = document.getElementById("percentage");
+const bgColorInput = document.getElementById("bg-color");
 // Event listeners para validar mientras se escribe
 widthInput.addEventListener("input",() => validateDecimal(widthInput, 1, 10));
 heightInput.addEventListener("input",() => validateDecimal(heightInput, 1, 10));
 dpiInput.addEventListener("input",() => validateInteger(dpiInput, 72, 600));
 percentageInput.addEventListener("input",() => validateInteger(percentageInput, 1, 100));
-
+bgColorInput.addEventListener("input",validateColor(bgColorInput));
 // Seleccionar color de fondo predefinido
 function selectBgColor(bgColor) {
-  document.getElementById("bg-color").value = bgColor;
+  bgColorInput.value = bgColor;
+  validateColor(bgColorInput);
 }
 
 // Agregar eventos de cambio a los campos del formulario para validar
@@ -162,6 +183,8 @@ validateForm();
 
 submitButton.addEventListener("click", (e) => {
   e.preventDefault();
+  // Deshabilitar el botón
+  submitButton.disabled = true;
   handleImage(selectedFile);
 });
 
