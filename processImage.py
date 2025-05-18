@@ -16,40 +16,58 @@ def read_image(file):
     img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
     return img
 
-def detect_face(img):
+def detect_head(img, debug=False):
+    # Configurar Face Mesh
+    mp_face_mesh = mp.solutions.face_mesh
+    face_mesh = mp_face_mesh.FaceMesh(
+        static_image_mode=True,
+        max_num_faces=1,
+        refine_landmarks=False,
+        min_detection_confidence=0.5
+    )
     
-    # Convertir a RGB para MediaPipe
+    # Convertir a RGB
     img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    # Cargar clasificador de rostros
-    mp_face_detection = mp.solutions.face_detection
-    face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
-    face = face_detection.process(img_rgb)
+    results = face_mesh.process(img_rgb)
     
-    if face.detections:
-        # Extraer coordenadas de la cara detectada
-        detection = face.detections[0]
-        bboxC = detection.location_data.relative_bounding_box
-        x = int(bboxC.xmin * img.shape[1])
-        y = int(bboxC.ymin * img.shape[0])
-        w = int(bboxC.width * img.shape[1])
-        h = int(bboxC.height * img.shape[0])
-        print(f"Rostro detectado: {x}, {y}, {w}, {h}")
-        return x, y, w, h
-    else:
+    if not results.multi_face_landmarks:
         print("No se detectó ningún rostro")
         return None
+    
+    # Obtener todos los landmarks
+    landmarks = results.multi_face_landmarks[0].landmark
+    
+    x_coords = [l.x for l in landmarks]
+    y_coords = [l.y for l in landmarks]
+    
+    # Convertir a píxeles
+    h, w = img.shape[:2]
+    # Encontrar límites del rostro
+    min_x, max_x = int(w * min(x_coords)), int(w * max(x_coords))
+    min_y, max_y = int(h * min(y_coords)),int(h * max(y_coords))
+    
+    width = max_x - min_x
+    height = max_y - min_y 
+    # Mejorar detección de altura (coordenada Y) mediante análisis de contenido
+    # Recorrer la imagen de arriba a abajo para encontrar el primer punto con información
+    new_min_y = find_top_content(img, min_x, max_x)
+    if new_min_y < min_y and new_min_y is not None:
+        diff = min_y - new_min_y
+        min_y = new_min_y
+        height = diff + height
+    print(f"imagen: {img.shape}")
+    print(f"Rostro detectado: {min_x}, {min_y}, {width}, {height}")
+    if debug:
+        img = show_face(img, min_x, min_y, width, height)
+    return min_x, min_y, width, height
+
 
 def show_face(img, x, y, w, h):
     # Dibujar un rectángulo alrededor de la cara detectada
-    cv.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    cv.rectangle(img, (x, y), (x + w, y + h ), (0, 255, 0), 5)
     return img
 
 def image_crop(img , width, height, percent, x, y, w, h):
-        
-    # Correjir la región de la cara
-    margin = 0.5
-    y = y - int(h * margin)
-    h = h + int(h * margin)
     
     # Definir constantes para recortar imagen
     aspect_ratio = width / height
@@ -58,7 +76,7 @@ def image_crop(img , width, height, percent, x, y, w, h):
     side_margin = int((width_orig - w) * 0.5)
     height_diff = height_orig - h
     x = x - side_margin
-    y = y - int(height_diff * 0.2)
+    y = y - int(height_diff * 0.1)
     w =  (side_margin * 2) + w 
     h =  height_diff + h
     
@@ -159,6 +177,37 @@ def image_resizer(img, width, height, dpi):
     image_resized = cv.resize(img, (width_px, height_px))
     return image_resized
 
+def find_top_content(img, min_x, max_x):
+    """
+    Recorre la imagen de arriba hacia abajo para encontrar el primer punto donde hay contenido
+    diferente al fondo homogéneo.
+    """
+    h, w = img.shape[:2]
+    
+    # Convertir a escala de grises para simplificar la detección
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        
+    # Determinar el ancho de la zona a analizar
+    roi_width = max_x - min_x
+    
+    # Umbral para determinar si hay diferencia significativa
+    threshold = 20
+    
+    # Muestra de fondo: tomar el punto más alto de la imagen
+    background_sample = np.median(gray[0:10, min_x:max_x])
+    
+    # Recorrer de arriba a abajo
+    for y in range(0, h):
+        # Obtener una franja horizontal y calcular su diferencia con el fondo
+        row_slice = gray[y, min_x:max_x]
+        diff = np.abs(row_slice - background_sample)
+        
+        # Si hay suficientes píxeles diferentes al fondo, considerar como contenido
+        if np.mean(diff) > threshold or np.max(diff) > threshold * 2:
+            return max(0, y )  # Retornar con un pequeño margen
+    
+    return None  # No se encontró un punto con contenido diferente
+
 def image_code(file):
     # Verificar que file sea una imagen válida
     if file is None or not isinstance(file, np.ndarray) or file.size == 0:
@@ -175,3 +224,4 @@ def image_code(file):
         import traceback
         traceback.print_exc()
         return None
+    

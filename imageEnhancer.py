@@ -6,17 +6,15 @@ def imageEnhancer(
                     brightness=1.0, 
                     contrast=1.2, 
                     saturation=1.1, 
-                    sharpness=1.2, 
-                    auto_white_balance=True
+                    normalize_image=True
                     ):
     """
-    Procesa la imagen con OpenCV para ajustar niveles
+    Procesa la imagen con OpenCV para ajustar niveles, contraste y saturación.
     Args:
         image: Imagen a procesar
         brightness: Factor de ajuste de brillo (>1 más brillante)
         contrast: Factor de ajuste de contraste (>1 más contraste)
         saturation: Factor de ajuste de saturación (>1 más saturado)
-        sharpness: Factor de ajuste de nitidez (>1 más nitidez)
         auto_white_balance: Si aplicar balance de blancos automático
     
     Returns:
@@ -30,13 +28,17 @@ def imageEnhancer(
         rgb = img
         alpha = None
         
+    # Ajuste del histograma si está activado
+    if normalize_image:
+        rgb = normalize_channels_individually(rgb)
+        
     # Convertir a LAB para ajustes de contraste/brillo más naturales
     lab = cv.cvtColor(rgb, cv.COLOR_BGR2LAB)
     l, a, b = cv.split(lab)
     
     # Aplicar CLAHE (Contrast Limited Adaptive Histogram Equalization) al canal L
-    clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    l = clahe.apply(l)
+    #clahe = cv.createCLAHE(clipLimit=1.0, tileGridSize=(16,16))
+    #l = clahe.apply(l)
     
     # Ajustar brillo
     l = cv.convertScaleAbs(l, alpha=brightness, beta=0)
@@ -49,22 +51,13 @@ def imageEnhancer(
     lab = cv.merge((l, a, b))
     enhanced = cv.cvtColor(lab, cv.COLOR_LAB2BGR)
     
-    # Balance de blancos automático si está activado
-    if auto_white_balance:
-        enhanced = autoWhiteBalance(enhanced)
     
-        # Ajustar saturación
+    # Ajustar saturación
     hsv = cv.cvtColor(enhanced, cv.COLOR_BGR2HSV)
     h, s, v = cv.split(hsv)
     s = cv.convertScaleAbs(s, alpha=saturation, beta=0)
     hsv = cv.merge((h, s, v))
     enhanced = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)
-    
-    # Aplicar sharpening/nitidez
-    kernel = np.array([[-1, -1, -1], 
-                        [-1,  9, -1], 
-                        [-1, -1, -1]])
-    enhanced = cv.filter2D(enhanced, -1, kernel * sharpness)
     
     # Reintegrar canal alpha si existía
     if alpha is not None:
@@ -72,18 +65,37 @@ def imageEnhancer(
         enhanced[:,:,3] = alpha
         
     return enhanced
+    
+def normalize_image_global(image):
+    image_float = image.astype(np.float32)
+    # Normalización global (todos los canales juntos)
+    min_val = np.min(image_float)
+    max_val = np.max(image_float)
+    
+    # Evitar división por cero
+    if max_val > min_val:
+        normalized = 255 * (image - min_val) / (max_val - min_val)
+        return normalized.astype(np.uint8)
+    return image
 
-def autoWhiteBalance(img):
-        """Aplica balance de blancos automático a una imagen BGR"""
-        # Convertir a LAB
-        lab = cv.cvtColor(img, cv.COLOR_BGR2LAB)
-        avg_a = np.average(lab[:, :, 1])
-        avg_b = np.average(lab[:, :, 2])
+def normalize_channels_individually(image):
+    # Separar canales
+    if len(image.shape) == 3:  # Imagen a color
+        channels = cv.split(image)
+        normalized_channels = []
         
-        # Ajustar componentes a y b para neutralizar color
-        lab[:, :, 1] = lab[:, :, 1] - ((avg_a - 128) * 0.8)
-        lab[:, :, 2] = lab[:, :, 2] - ((avg_b - 128) * 0.8)
+        for channel in channels:
+            image_float = image.astype(np.float32)
+            # Normalización global (todos los canales juntos)
+            min_val = np.min(image_float)
+            max_val = np.max(image_float)
+            
+            if max_val > min_val:
+                norm_channel = 255 * (channel - min_val) / (max_val - min_val)
+                normalized_channels.append(norm_channel.astype(np.uint8))
+            else:
+                normalized_channels.append(channel)
         
-        # Convertir de vuelta a BGR
-        balanced = cv.cvtColor(lab, cv.COLOR_LAB2BGR)
-        return balanced
+        return cv.merge(normalized_channels)
+    else:  # Imagen en escala de grises
+        return normalize_image_global(image)

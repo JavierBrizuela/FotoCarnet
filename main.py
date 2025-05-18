@@ -37,10 +37,7 @@ def process_image():
     image = pi.read_image(file)
      
     #detección de rostro
-    x, y, w, h = pi.detect_face(image)
-    
-    # Muestra un rectangulo alrededor de la cara detectada (opcional)
-    #face = pi.show_face(selfie_segmentation, x, y, w, h)
+    x, y, w, h = pi.detect_head(image, debug=False)
     
     # Recortar imagen con los datos de deteccion de rostro
     image_croped = pi.image_crop(image, width, height, percent, x ,y , w, h)
@@ -51,20 +48,20 @@ def process_image():
     image_resized = pi.image_resizer(image_croped, width, height, dpi)
     if image_resized is None:
             return jsonify({'error': 'Error al redimensionar la imagen'}), 500
-    # Ajustar brillo, contraste, saturación y nitidez
-    """ image_enhancer = imageEnhancer(
+    
+    # Ajustar brillo, contraste, saturación y normalizar histograma
+    image_enhancer = imageEnhancer(
                                     image_resized, 
-                                    brightness=1.2, 
-                                    contrast=1.2, 
-                                    saturation=1.1, 
-                                    sharpness=1.2, 
-                                    auto_white_balance=False
-                                    ) """
+                                    brightness=1.05, 
+                                    contrast=1.05, 
+                                    saturation=1.05,
+                                    normalize_image=True
+                                    )
     # Convertir color hexadecimal a BGR
     bg_color = pi.hex_to_bgr(hex_color)
     
     # Procesar imagen - Obtener mascara
-    image = pi.rem_bg(image_resized, bg_color)
+    image = pi.rem_bg(image_enhancer, bg_color)
     if image is None:
             return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
     

@@ -185,8 +185,26 @@ submitButton.addEventListener("click", (e) => {
   e.preventDefault();
   // Deshabilitar el botón
   submitButton.disabled = true;
+  // Mostrar el mensaje de carga
+  showLoadingAnimation();
+  // Llamar a la función para manejar la imagen
   handleImage(selectedFile);
 });
+
+// Función para mostrar la animación de carga
+function showLoadingAnimation() {
+  previewZone.innerHTML = `
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Procesando imagen...</p>
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  `;
+}
 
 //Actualiza los valores de los campos cuando cambia el dropdown
 document.getElementById("templates").addEventListener("change", (e) => {
