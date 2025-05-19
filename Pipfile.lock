@@ -1094,11 +1094,11 @@
         },
         "pymatting": {
             "hashes": [
-                "sha256:2cdb7c4befacddef4d7adc2de8e34a272de639d608ae5c0a08613dfa42538101",
-                "sha256:f14f00a783b826c20f2c3fab446cdf6d9b0bb03e694e422fc3a5f933e1ed36df"
+                "sha256:62ecb81c6caaf6ced7442d3d0864b8f0a3f9e7a95dfb4f8b672e3526f902d9b3",
+                "sha256:75e2ec1e346dbd564c9a2cc8229b134ec939f49008fa570025db30003d0c46fc"
             ],
             "markers": "python_version >= '3'",
-            "version": "==1.1.13"
+            "version": "==1.1.14"
         },
         "pyparsing": {
             "hashes": [
@@ -1353,14 +1353,14 @@
         },
         "sounddevice": {
             "hashes": [
-                "sha256:09ca991daeda8ce4be9ac91e15a9a81c8f81efa6b695a348c9171ea0c16cb041",
-                "sha256:4313b63f2076552b23ac3e0abd3bcfc0c1c6a696fc356759a13bd113c9df90f1",
-                "sha256:d16cb23d92322526a86a9490c427bf8d49e273d9ccc0bd096feecd229cde6031",
-                "sha256:d84cc6231526e7a08e89beff229c37f762baefe5e0cc2747cbe8e3a565470055",
-                "sha256:e2017f182888c3f3c280d9fbac92e5dbddac024a7e3442f6e6116bd79dab8a9c"
+                "sha256:3a113ce614a2c557f14737cb20123ae6298c91fc9301eb014ada0cba6d248c5f",
+                "sha256:82375859fac2e73295a4ab3fc60bd4782743157adc339561c1f1142af472f505",
+                "sha256:943f27e66037d41435bdd0293454072cdf657b594c9cde63cd01ee3daaac7ab3",
+                "sha256:c634d51bd4e922d6f0fa5e1a975cc897c947f61d31da9f79ba7ea34dff448b49",
+                "sha256:e18944b767d2dac3771a7771bdd7ff7d3acd7d334e72c4bedab17d1aed5dbc22"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==0.5.1"
+            "version": "==0.5.2"
         },
         "sympy": {
             "hashes": [
