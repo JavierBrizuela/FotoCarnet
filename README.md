@@ -5,7 +5,7 @@
 
 Herramienta para generar y procesar fotos carnet profesionales, ideal para documentos de identificación.
 
-![Demo](https://github.com/user-attachments/assets/5316e695-7b6a-4f37-8b03-f0390e2617a9) <!-- Reemplazar con imagen real -->
+![Demo](https://github.com/user-attachments/assets/f91c518c-1b1c-4ba9-be55-a895b2180b84)
 
 ## Características ✨
 - Generación automática de fotos carnet en tamaños estándar y personalizados
