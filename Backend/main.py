@@ -1,19 +1,15 @@
 import json
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import processImage as pi
 from imageEnhancer import imageEnhancer
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False  # Para respuestas JSON con caracteres especiales
+CORS(app)
 
 def load_template():
     with open('config/templates.json', 'r', encoding='utf-8') as file:
         return json.load(file)
-
-@app.route('/')
-def index():
-    templates = load_template()
-    return render_template('index.html', templates=templates)
     
 @app.route('/process', methods=['POST'])
 def process_image():

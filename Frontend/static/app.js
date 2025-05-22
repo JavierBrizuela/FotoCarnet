@@ -3,6 +3,7 @@ const FileInput = document.getElementById("file-input");
 const previewZone = document.getElementById("preview-zone");
 const formZone = document.getElementById("form-zone");
 const submitButton = document.getElementById("submit");
+const API_URL = window.CONFIG.API_URL || "http://localhost:5000"; // Cambia esto según tu entorno
 let selectedFile = null;
 
 // Estado de validación
@@ -77,7 +78,7 @@ async function handleImage(file) {
   formData.append("image", file);
 
   try {
-    const response = await fetch("/process", {
+    const response = await fetch(`${API_URL}/process`, {
       method: "POST",
       body: formData,
     });
