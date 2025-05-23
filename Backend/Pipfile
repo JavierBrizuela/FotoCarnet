@@ -10,6 +10,7 @@ mediapipe = "*"
 rembg = "*"
 onnxruntime = "*"
 flask-cors = "*"
+replicate = "*"
 
 [dev-packages]
 

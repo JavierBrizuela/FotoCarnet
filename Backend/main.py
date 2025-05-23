@@ -5,12 +5,11 @@ import processImage as pi
 from imageEnhancer import imageEnhancer
 
 app = Flask(__name__)
-CORS(app)
-
-def load_template():
-    with open('config/templates.json', 'r', encoding='utf-8') as file:
-        return json.load(file)
-    
+CORS(
+        app,
+        resources={r"/*": {"origins": "https://fotocarnet.netlify.app"}}
+     )
+  
 @app.route('/process', methods=['POST'])
 def process_image():
     
@@ -57,9 +56,11 @@ def process_image():
     bg_color = pi.hex_to_bgr(hex_color)
     
     # Procesar imagen - Obtener mascara
-    image = pi.rem_bg(image_enhancer, bg_color)
+    image = pi.replicate_api(image_enhancer)
     if image is None:
             return jsonify({'error': 'Error al remover el fondo de la imagen'}), 500
+    # Agregar fondo a la imagen
+    image = pi.add_background(image, bg_color)
     
     # Aplicar codificación de imagen para la respuesta
     image_process = pi.image_code(image)

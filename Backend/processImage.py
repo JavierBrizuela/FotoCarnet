@@ -4,6 +4,9 @@ import numpy as np
 import base64
 import mediapipe as mp
 from rembg import remove, new_session
+import replicate
+import requests
+from io import BytesIO
 
 def hex_to_bgr(hex_color):
     hex_color = hex_color.lstrip('#')
@@ -127,6 +130,26 @@ def image_padding(img, x, y, w, h):
         flags=cv.INPAINT_TELEA
     )
     return inpainted_face
+def replicate_api(img):
+    # Convertir la imagen de OpenCV (numpy array) a bytes (PNG)
+    _, img_encoded = cv.imencode(".png", img)
+    img_bytes = img_encoded.tobytes()
+
+    # Crear un objeto de archivo en memoria
+    image_buffer = BytesIO(img_bytes)
+    image_buffer.name = "image.png"  # Nombre requerido por Replicate
+    output = replicate.run(
+                            "men1scus/birefnet:f74986db0355b58403ed20963af156525e2891ea3c2d499bfbfb2a28cd87c5d7",
+                            input=  {
+                                "image": image_buffer,
+                                "resolution": ""
+                                    }       
+    )
+    print(f"output: {output}")
+    response = requests.get(output)
+    print(f"response: {response}")
+    img = cv.imdecode(np.frombuffer(response.content, np.uint8), cv.IMREAD_UNCHANGED)
+    return img
 
 def rem_bg(img, bg_color):
     # "u2net_human_seg" 5seg resultado: regular
@@ -162,6 +185,24 @@ def fusion_image_background(img, mask, bg_color):
     output_image = img * mask + bg_image * (1 - mask)
     output_image = output_image.astype(np.uint8)
     return output_image
+
+def add_background(img, bg_color):
+    
+    # Crear fondo del color deseado
+    background = np.zeros_like(img[:, :, :3], dtype=np.uint8)
+    background[:] = bg_color
+    
+    # Separar canales
+    alpha = img[:, :, 3] / 255.0  # Normalizar alpha a [0, 1]
+    
+    # Expandir alpha a 3 canales para operaciones
+    alpha = np.expand_dims(alpha, axis=-1)  # Formato (H, W, 1)
+    
+    # Mezclar manualmente
+    foreground = img[:, :, :3].astype(float)
+    combined = (foreground * alpha) + (background.astype(float) * (1 - alpha))
+    
+    return combined.astype(np.uint8)
 
 def image_resizer(img, width, height, dpi):
     # Verificar que file sea una imagen válida
@@ -214,11 +255,16 @@ def image_code(file):
         print("Error: La imagen de entrada para codificar es inválida o está vacía")
         return None
     
+    # Si la imagen es BGRA (con transparencia), convertir a BGR primero
+    if file.shape[2] == 4:
+        file = cv.cvtColor(file, cv.COLOR_BGRA2BGR)
+        
     try:
         # Codificar imagen resultante
-        _, buffer = cv.imencode('.jpg', file)
+        _, buffer = cv.imencode('.png', file)
         encoded_image = base64.b64encode(buffer).decode('utf-8')
         return encoded_image
+    
     except Exception as e:
         print(f"Error al codificar la imagen: {str(e)}")
         import traceback
