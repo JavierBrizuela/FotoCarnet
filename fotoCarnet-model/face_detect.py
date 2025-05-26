@@ -51,8 +51,10 @@ class FaceDetect:
         face_bbox = self._get_face_bbox(face_results, width, height) if face_results.detections else None
         
         # Usar la cara como referencia para el ancho y alto
-        face_x, face_y, face_w, face_h = face_bbox        
-        return face_x, face_y, face_w, face_h, top_hair
+        face_x, face_y, face_w, face_h = face_bbox  
+        face_h = int(face_y - top_hair + face_h) 
+        face_y = top_hair     
+        return face_x, face_y, face_w, face_h
     
     def _find_topmost_hair_pixel(self, selfie_mask: np.ndarray) -> int:
         """
@@ -83,23 +85,4 @@ class FaceDetect:
         h = int(bbox.height * heigth)
         
         return (x, y, w, h)
-    
-    def _fallback_face_detection(self, image: np.ndarray, face_results) -> dict:
-        """
-        Método de respaldo cuando no se detecta cabello
-        """
-        height, width = image.shape[:2]
-        
-        if face_results.detections:
-            face_bbox = self._get_face_bbox(face_results)
-            if face_bbox:
-                face_x, face_y, face_w, face_h = face_bbox
-                # Usar 30% por encima de la cara como límite superior
-                top_boundary = max(0, face_y - int(face_h * 0.3))
-            else:
-                top_boundary = int(height * 0.15)  # 15% desde arriba
-        else:
-            top_boundary = int(height * 0.15)  # 15% desde arriba
-        
-        return face_x, face_y, face_w, face_h, top_boundary
     

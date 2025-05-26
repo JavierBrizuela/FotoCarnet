@@ -15,14 +15,14 @@ utils = Utils()
 face_detect = FaceDetect()
 crop_image = CropImage()
 # Cargar la imagen
-img = cv.imread(str("original.jpeg"))
+img = cv.imread(str("G:/apedido/carnet/entrenamiento/DSCN0002.jpg"))
 if img is None:
     raise ValueError("Image not found or cannot be read.")
 print(f"Image shape: {img.shape}")
 
 # Detectar y obtener dimensiones de la cara
-face_x, face_y, face_w, face_h, top_hair = face_detect.find_hair_top_boundary(img)
-print(f"Face coordinates: x={face_x}, y={face_y}, w={face_w}, h={face_h}, top_hair={top_hair}")
+face_x, face_y, face_w, face_h = face_detect.find_hair_top_boundary(img)
+print(f"Face coordinates: x={face_x}, y={face_y}, w={face_w}, h={face_h}")
 
 # Recortar la imagen con las dimensiones de la cara
 croped_img = crop_image.crop(
@@ -31,7 +31,6 @@ croped_img = crop_image.crop(
     face_y=face_y,
     face_w=face_w,
     face_h=face_h,
-    top_hair=top_hair,
     width=4.0,  # Ancho en cm
     height=4.0,  # Alto en cm
     dpi=300,  # DPI para salida
@@ -44,7 +43,7 @@ croped_img = crop_image.crop(
 # return postprocess(output)
 # Mejorar brillo, contraste y saturación
 enhancer_img = enhancer.enhance_image(
-    img, 
+    croped_img, 
 )
 output_path = utils.encode_image_to_file(enhancer_img)
 #return Path(output_path)
