@@ -1,0 +1,10 @@
+# torchvision==0.17.1
+numpy==1.26.3
+opencv-python==4.10.0.84
+mediapipe==0.10.11
+rembg==2.0.61
+replicate==0.15.4
+requests==2.32.3
+Pillow==11.0.0
+torch==2.2.1
+onnxruntime==1.17.1

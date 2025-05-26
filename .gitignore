@@ -1,1 +1,7 @@
 .env
+.cog
+.github
+__pycache__
+*.png
+*.jpeg
+*.jpg
