@@ -9,11 +9,14 @@ from face_detect import FaceDetect
 from image_enhancer import ImageEnhancer
 from utils import Utils
 from crop_image import CropImage
+from remove_bg import RemoveBg
 
 enhancer = ImageEnhancer()
 utils = Utils()
 face_detect = FaceDetect()
 crop_image = CropImage()
+remove_bg = RemoveBg()
+
 # Cargar la imagen
 img = cv.imread(str("G:/apedido/carnet/entrenamiento/DSCN0002.jpg"))
 if img is None:
@@ -34,16 +37,19 @@ croped_img = crop_image.crop(
     width=4.0,  # Ancho en cm
     height=4.0,  # Alto en cm
     dpi=300,  # DPI para salida
-    face_percentage=70  # Porcentaje de cara en la imagen
+    face_percentage=50  # Porcentaje de cara en la imagen
 )
 # Extraer el fondo y colocarle un color sólido
-
+extracted_img = remove_bg.rem_bg(
+    croped_img, 
+    bg_color=utils.hex_to_bgr("#FFFFFF")  # Convertir color hexadecimal a BGR
+)
 # output = self.model(processed_image, scale)
 
 # return postprocess(output)
 # Mejorar brillo, contraste y saturación
 enhancer_img = enhancer.enhance_image(
-    croped_img, 
+    extracted_img, 
 )
 output_path = utils.encode_image_to_file(enhancer_img)
 #return Path(output_path)

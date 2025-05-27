@@ -12,8 +12,8 @@ class Utils:
             raise ValueError("Invalid image for encoding")
         
         # Si la imagen es BGRA, convertir a BGR
-        if len(img.shape) == 3 and img.shape[2] == 4:
-            img = cv.cvtColor(img, cv.COLOR_BGRA2BGR)
+        #if len(img.shape) == 3 and img.shape[2] == 4:
+        #    img = cv.cvtColor(img, cv.COLOR_BGRA2BGR)
             
         try:
             # Si no se proporciona ruta, crear una temporal
@@ -29,3 +29,14 @@ class Utils:
             
         except Exception as e:
             raise ValueError(f"Error saving image: {str(e)}")
+        
+    def hex_to_bgr(self, hex_color):
+        hex_color = hex_color.lstrip('#')
+        if len(hex_color) == 3:  # Formato corto (#FFF → #FFFFFF)
+            hex_color = ''.join([c * 2 for c in hex_color])
+        if len(hex_color) != 6:
+            raise ValueError("Color hex debe tener formato #RRGGBB")
+        try:
+            return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        except ValueError:
+            raise ValueError("Color hex inválido")

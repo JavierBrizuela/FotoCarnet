@@ -10,6 +10,7 @@ from image_enhancer import ImageEnhancer
 from utils import Utils
 from face_detect import FaceDetect
 from crop_image import CropImage
+from remove_bg import RemoveBg
 
 class Predictor(BasePredictor):
     def setup(self) -> None:
@@ -19,6 +20,7 @@ class Predictor(BasePredictor):
         self.utils = Utils()
         self.face_detect = FaceDetect()
         self.crop_image = CropImage()
+        self.remove_bg = RemoveBg()
         
     def predict(
         self,
@@ -43,8 +45,8 @@ class Predictor(BasePredictor):
         print(f"Image shape: {img.shape}")
         
         # Detectar y obtener dimensiones de la cara
-        face_x, face_y, face_w, face_h, top_hair = self.face_detect.find_hair_top_boundary(img)
-        print(f"Face coordinates: x={face_x}, y={face_y}, w={face_w}, h={face_h}, top_hair={top_hair}")
+        face_x, face_y, face_w, face_h = self.face_detect.find_hair_top_boundary(img)
+        print(f"Face coordinates: x={face_x}, y={face_y}, w={face_w}, h={face_h}")
         
         # Recortar la imagen con las dimensiones de la cara
         croped_img = self.crop_image.crop(
@@ -59,14 +61,20 @@ class Predictor(BasePredictor):
             dpi=dpi,  # DPI para salida
             face_percentage=face_percentage  # Porcentaje de cara en la imagen
         )
+        print(f"Croped image shape: {croped_img.shape}")
         
         # Extraer el fondo y colocarle un color sólido
+        extracted_img = self.remove_bg.rem_bg(
+            croped_img, 
+            bg_color=self.utils.hex_to_bgr(bg_color)
+        )
+        # Redimencionar imagen a DPI especificado
+        dpc = int(dpi / 2.54) # Conversion de DPI a DPC (dots por cm)
+        extracted_img = cv.resize(extracted_img, (int(width * dpc), int(height * dpc)), interpolation=cv.INTER_AREA)
         
-        
-        # return postprocess(output)
         # Mejorar brillo, contraste y saturación
         enhancer_img = self.enhancer.enhance_image(
-            img, 
+            extracted_img, 
             brightness=brightness, 
             contrast=contrast, 
             saturation=saturation, 
