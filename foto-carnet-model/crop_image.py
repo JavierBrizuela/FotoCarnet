@@ -4,7 +4,7 @@ class CropImage:
     def __init__(self):
         pass
     
-    def crop(self, image, face_x, face_y, face_w, face_h, width=4.0, height=4.0, dpi=300, face_percentage=65):
+    def crop(self, image, face_x, face_y, face_w, face_h, width=4.0, height=4.0, face_percentage=65):
         
         # Calcular proporciones para recortar imagen
         aspect_ratio = width / height

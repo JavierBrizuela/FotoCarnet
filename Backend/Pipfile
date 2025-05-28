@@ -11,6 +11,7 @@ rembg = "*"
 onnxruntime = "*"
 flask-cors = "*"
 replicate = "*"
+cog = "*"
 
 [dev-packages]
 

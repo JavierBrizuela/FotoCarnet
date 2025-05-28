@@ -15,7 +15,6 @@ from remove_bg import RemoveBg
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
-        # self.model = torch.load("./weights.pth")
         self.enhancer = ImageEnhancer()
         self.utils = Utils()
         self.face_detect = FaceDetect()
@@ -36,8 +35,6 @@ class Predictor(BasePredictor):
         normalize_histogram_individually: bool = Input(description="Normalize histogram image", default=True),
     ) -> Path:
         """Run a single prediction on the model"""
-        # processed_input = preprocess(image)
-        
         # Cargar la imagen
         img = cv.imread(str(image))
         if img is None:
@@ -48,17 +45,15 @@ class Predictor(BasePredictor):
         face_x, face_y, face_w, face_h = self.face_detect.find_hair_top_boundary(img)
         print(f"Face coordinates: x={face_x}, y={face_y}, w={face_w}, h={face_h}")
         
-        # Recortar la imagen con las dimensiones de la cara
+        # Recortar la imagen con las dimensiones especificadas
         croped_img = self.crop_image.crop(
             image=img,
             face_x=face_x,
             face_y=face_y,
             face_w=face_w,
             face_h=face_h,
-            top_hair=top_hair,
             width=width,  # Ancho en cm
             height=height,  # Alto en cm
-            dpi=dpi,  # DPI para salida
             face_percentage=face_percentage  # Porcentaje de cara en la imagen
         )
         print(f"Croped image shape: {croped_img.shape}")
@@ -70,11 +65,11 @@ class Predictor(BasePredictor):
         )
         # Redimencionar imagen a DPI especificado
         dpc = int(dpi / 2.54) # Conversion de DPI a DPC (dots por cm)
-        extracted_img = cv.resize(extracted_img, (int(width * dpc), int(height * dpc)), interpolation=cv.INTER_AREA)
+        resized_img = cv.resize(extracted_img, (int(width * dpc), int(height * dpc)), interpolation=cv.INTER_AREA)
         
         # Mejorar brillo, contraste y saturación
         enhancer_img = self.enhancer.enhance_image(
-            extracted_img, 
+            resized_img, 
             brightness=brightness, 
             contrast=contrast, 
             saturation=saturation, 
