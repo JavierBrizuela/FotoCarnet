@@ -14,7 +14,7 @@ def test_model():
     print("Modelo cargado correctamente!")
     
     # Ruta de imagen de prueba
-    input_image_path = "original.jpeg"  # Cambia por tu imagen
+    input_image_path = "G:\apedido\carnet/DSCN9910.JPG"  # Cambia por tu imagen
     
     if not Path(input_image_path).exists():
         print(f"Error: No se encuentra la imagen {input_image_path}")

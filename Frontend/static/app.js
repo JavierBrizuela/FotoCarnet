@@ -76,10 +76,14 @@ async function handleImage(file) {
   formData.append("percentage", percentage);
   formData.append("bg-color", bgColor);
   formData.append("image", file);
-
+  formData.append("hardware", "gpu-t4"); // Especificar hardware
   try {
     const response = await fetch(`${API_URL}/process`, {
       method: "POST",
+      headers: {
+        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
       body: formData,
     });
     const data = await response.json();
