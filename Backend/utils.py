@@ -6,14 +6,14 @@ class Utils:
     def __init__(self):
         pass
     
-    def read_image(file):
+    def read_image(self, file):
     # Leer imagen
         img = cv.imdecode(np.frombuffer(file.read(), np.uint8), cv.IMREAD_COLOR)
         if img is None:
             raise ValueError("La imagen no se pudo leer correctamente.")
         return img
     
-    def image_code(file):
+    def image_code(self, file):
         # Verificar que file sea una imagen válida
         if file is None or not isinstance(file, np.ndarray) or file.size == 0:
             print("Error: La imagen de entrada para codificar es inválida o está vacía")
@@ -35,7 +35,7 @@ class Utils:
             traceback.print_exc()
             return None
     
-    def resize_image(img, width, height, dpi):
+    def resize_image(self, img, width, height, dpi):
         """
         Redimensiona la imagen a las dimensiones especificadas en centímetros y DPI.
         

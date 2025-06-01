@@ -1,8 +1,8 @@
 import json
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import processImage as pi
-from imageEnhancer import imageEnhancer
+
 # Importar modulos locales
 from utils import Utils
 from face_detect import FaceDetect
@@ -11,9 +11,11 @@ from remove_bg import RemoveBg
 from image_enhancer import ImageEnhancer
 
 app = Flask(__name__)
+# Obtener la lista de orígenes permitidos desde variables de entorno
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://127.0.0.1:5500").split(",")
 CORS(
         app,
-        resources={r"/*": {"origins": "https://fotocarnet.javierbrizuela.dev"}}
+        resources={r"/*": {"origins": allowed_origins}}
      )
   
 # Instanciar modulos locales
@@ -46,7 +48,7 @@ def process_image():
         height = height * 2.54
     
     # Cargar imagen desde archivo
-    image = pi.read_image(file)
+    image = utils.read_image(file)
     print(f"Image shape: {image.shape}")
         
     # Detectar y obtener dimensiones de la cara
@@ -59,6 +61,12 @@ def process_image():
     
     # Redimencionar imagen a DPI especificado
     resized_img = utils.resize_image(croped_img, width, height, dpi)
+    
+    # Extraer el fondo y colocarle un color sólido
+    """ extracted_img = remove_bg.rem_bg(
+        croped_img, 
+        bg_color = utils.hex_to_bgr(hex_color)
+        ) """
     
     # Mejorar brillo, contraste y saturación
     enhancer_img = enhancer.enhance_image(
