@@ -3,7 +3,7 @@ const FileInput = document.getElementById("file-input");
 const previewZone = document.getElementById("preview-zone");
 const formZone = document.getElementById("form-zone");
 const submitButton = document.getElementById("submit");
-const API_URL = process.env.API_URL || "http://localhost:5000"; // Cambia esto según tu entorno
+const API_URL = window.CONFIG.API_URL || "http://localhost:5000"; // Cambia esto según tu entorno
 let selectedFile = null;
 
 // Estado de validación
